@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<script>
+
+
+$(document).ready(function(){
+  $("#registro").click(function(){
+    var vnombre = document.getElementById("nombre").value;
+    var vemail = document.getElementById("email").value;
+    var vpassw = document.getElementById("pass").value;
+    var vrecu = document.getElementById("recu").value;
+    var vbio = document.getElementById("bio").value;
+
+    //alert(op1+' '+op2+' '+op);
+    //var vres="";
+    var asd=$.get(
+    "https://ba2qqabl5hj6c6ptdhesrvxkqi0dxkqh.lambda-url.us-east-1.on.aws/",
+
+        {nombre : vnombre, email : vemail , passw : vpassw, recu: vrecu, bio: vbio},
+        function(data) {
+
+            function jsonEscape(str)  {
+              return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+            }
+
+            var json=data;
+            alert('page content: ' + JSON.stringify(json));
+            //json=JSON.parse(JSON.stringify(json).replace(/\\"/g,'"'));
+            //document.getElementById("res").innerHTML="Resultado recibido:"+ json.res;
+            if(json.res == "Error1"){
+              alert("Error, el nombre de usuario no valido");
+            }else if(json.res == "Error2"){
+              alert("Error, formato del email incorrecto");
+            }else if(json.res == "operacion correcta"){
+              alert("Registro completado");
+              window.location.replace(json.redirect);
+
+            }
+
+        }
+    )
+      .fail(function(xhr, status, error) {
+        alert( error );
+      })
+      
+    asd.always(function() {
+      alert( "second finished" );
+    });
+
+
+  });
+  $("#inicio").click(function(){
+    window.location.replace("Login.html");
+  });
+});
+
+</script>
+
+</head>
+<body>
+    <h2>Registrarse</h2>
+  <label >Nombre de usuario:</label>
+  <input type="text" id="nombre" name="nombre"><br><br>
+  <label >Correo electrónico:</label>
+  <input type="text" id="email" name="email"><br><br>
+  <label >Contraseña:</label>
+  <input type="text" id="pass" name="pass"><br><br>
+  <label >Frase de recuperación de contraseña:</label>
+  <input type="text" id="recu" name="recu"><br><br>
+  <label >Biografía:</label>
+  <input type="text" id="bio" name="bio"><br><br>
+
+
+  <button id ="registro">Registrarse</button>
+  <button id="inicio">Iniciar Sesión</button>
+
+</body>
+</html>

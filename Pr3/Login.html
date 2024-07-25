@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<script>
+
+
+$(document).ready(function(){
+  $("#inicio").click(function(){
+    var vnombre = document.getElementById("name").value;
+    var vpassw = document.getElementById("pass").value;
+
+    //alert(op1+' '+op2+' '+op);
+    //var vres="";
+    var asd=$.get(
+    "https://6vrhuvf3ur2hprxvyprkb75v7e0ayygc.lambda-url.us-east-1.on.aws/",//ok
+
+      {nombre : vnombre, passw : vpassw},
+      function(data) {
+
+        function jsonEscape(str)  {
+          return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+        }
+
+        var json=data;
+        alert('page content: ' + JSON.stringify(json));
+        //json=JSON.parse(JSON.stringify(json).replace(/\\"/g,'"'));  
+        if(json.res == "Error1"){
+          alert("Error, el nombre de usuario no existe");
+        }else if(json.res == "Error2"){
+          alert("Error, contraseña incorrecta");
+        }else if(json.res == "operacion correcta"){
+          alert("Login success");
+          window.location.replace(json.redirect+"?name="+json.uname+"&id="+json.id);
+
+        }
+        
+
+      }
+    )
+      .done(function() {
+        alert( "success" );
+      })
+      .fail(function(xhr, status, error) {
+        alert( error );
+      })
+      
+    asd.always(function() {
+      alert( "finished" );
+    });
+
+
+  });
+  $("#registro").click(function(){
+    window.location.replace("Signup.html");
+  });
+
+  $("#check").click(function mostrarContraseña() {
+    var x = document.getElementById("pass");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
+    }
+  });
+
+  $("#recuperar").click(function(){
+
+    var vrecu = document.getElementById("recu").value;
+    var vnombre = document.getElementById("name").value;
+    //alert(op1+' '+op2+' '+op);
+    //var vres="";
+    var asd=$.get(
+    "https://gczdax64a4goazykgffbezf57a0yidlx.lambda-url.us-east-1.on.aws/",//ok
+
+      {recu : vrecu, nombre : vnombre},
+      function(data) {
+
+        function jsonEscape(str)  {
+          return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+        }
+
+        var json=data;
+        alert('page content: ' + JSON.stringify(json));
+        //json=JSON.parse(JSON.stringify(json).replace(/\\"/g,'"'));
+        document.getElementById("pass").innerHTML= json.passw;
+
+      }
+    )
+      .done(function() {
+        alert( "success" );
+      })
+      .fail(function(xhr, status, error) {
+        alert( error );
+      })
+      
+    
+
+  });
+
+});
+
+</script>
+
+</head>
+<body>
+  <h2>Inicio de Sesión</h2>
+  <label >Nombre de usuario:</label>
+  <input type="text" id="name" name="nombre"><br><br>
+  <label id="pas">Contraseña:</label>
+  <input type="password" id="pass" name="password"><br><br>
+  <input type="checkbox" id="check">Show Password<br><br>
+  <label >Recuperar Contraseña:</label>
+  <input type="text" id="recu" name="recu"><br><br>
+
+  <div>
+    <button id="inicio">Inicio de sesión</button>
+    <button id="registro">Registrarse</button>
+    <button id="recuperar">Recuperar contraseña</button>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+
+    function getAWSKeys() {
+        var asd=$.get(
+            "https://yukwmgrut7xtctydaxsnowsg3q0uyzoc.lambda-url.us-east-1.on.aws/",//cambio, en principio no pero hay que actualizar las calves de s3
+            {},
+            function(data) {
+
+                var json=data;
+                //        json=JSON.parse(json);
+                document.getElementById("Policy").value = json.stringToSign;
+                document.getElementById("X-Amz-Credential").value = json.xAmzCredential;		
+                document.getElementById("X-Amz-Date").value = json.amzDate;		
+                document.getElementById("X-Amz-Signature").value = json.stringSigned;	
+                document.getElementById("X-Amz-Security-Token").value = json.securityToken;	
+            
+            }
+        )
+    }
+
+    $(document).ready(function(){
+        getUserName();
+        ocultar();
+        cambio();
+        listarMensajes();
+    });//Fin del document.ready()
+
+    var idUser;
+    function getUserName() {
+        var urlParam = new URLSearchParams(window.location.search);
+        var uname = urlParam.get("name");
+        idUser = urlParam.get("id");
+        alert(idUser);
+
+        document.getElementById("userName").innerText= uname; 
+    }
+    function ocultar() {
+        $("#comunidad").hide();
+    }
+    function listarMensajes() {
+
+        document.getElementById("userName").value; 
+
+        var lista = $.get(
+            "https://3gacfakw3nnzduwluhlmmvzgga0dgkfp.lambda-url.us-east-1.on.aws/",//lambda ok
+            {id_username : idUser},
+            function(data) {
+
+                function jsonEscape(str)  {
+                    return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+                }
+
+                var json=data;
+
+                var list = "";
+                if(json.mensajes.length>0){
+                    for(var i = 0; i< json.mensajes.length; i++){
+                        list += "<li>"+json.mensajes[i]+"</li>";
+                        var url = json.archivos[i]
+                        
+                        if(url.endsWith(".png")){
+                            list += "<img src='"+url+"' width='320' height ='300'></img>";
+                        }else if (url.endsWith(".mp4")){
+                            list += "<video src='"+url+"' width='420' height ='300' controls></video>";
+                        }else{
+                            list += "<p>Post sin archivo</p>";
+                        }
+                    }
+                    $("#list").append(list);
+                }else{
+                    $("#list").append("Usuario sin mensajes");
+                }
+                
+
+            }
+        );
+    }
+
+
+    function publicarMensaje() {
+        alert( "Enviando!" );
+        
+        document.getElementById("key").value = idUser+"_"+document.getElementById("file").value.substring(document.getElementById("file").value.lastIndexOf('\\')+1);	
+        
+        var post=document.getElementById("post").value;
+        var file=document.getElementById("key").value;
+        var vuser = idUser;
+
+        var sendPost=$.post(
+        "https://oaon2jocclm3w2mj3egv3ws52a0sibxn.lambda-url.us-east-1.on.aws/",
+
+            {user: vuser, comment : post, attachment : file},
+            function(data) {
+
+                function jsonEscape(str)  {
+                    return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+                }
+
+                var json=data;
+                alert('resultado ' + JSON.stringify(json));
+                var list = "";
+                var url = json.archivo;
+                list += "<li> "+json.post+" </li>";
+                if(url.endsWith(".png")){
+                    list += "<img src='"+url+"' width='320' height ='300'></img>";
+                }else if (url.endsWith(".mp4")){
+                    list += "<video src='"+url+"' width='420' height ='300' controls></video>";
+                }else{
+                    list += "<p>Post sin archivo</p>";
+                }
+                $("#list").append(list);
+            
+            }
+        ).done(function() {
+        alert( "success" );
+      })
+      .fail(function(xhr, status, error) {
+        alert( error );
+      }); 
+        
+    }//fin de publicarMensaje()
+
+    /*****BUSCAR UN USUARIO Y PUBLICAR SUS MENSAJES*****/
+
+
+
+    function buscarUser(){
+        alert( "Buscando!" );
+        var vuserSearch = document.getElementById("search").value;
+        
+        var asd=$.get(
+            "https://p3kdhj4jfi4nm2ycn5fvse5tqi0rnzlq.lambda-url.us-east-1.on.aws/",
+
+            {userSearch : vuserSearch},
+            function(data) {
+
+                function jsonEscape(str)  {
+                    return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t").replace(/\\/g,"");
+                }
+
+                var json=data;
+
+                var list = "";
+                $("#list2").empty();
+                if(json.lista.length>0){
+                    for(var j = 0; j<json.lista.length;j++){
+                        list += "<h3> "+json.lista[j][0]+"</h3>";
+                        if(json.lista[j].length == 1){
+                            list += "<li> Usuario sin mensajes </li>";
+                        }    
+                        for(var i = 1; i< json.lista[j].length; i++){
+                            list += "<li> "+json.lista[j][i]+"</li>";
+                            var url = json.archivos[j][i];
+                            if(url.endsWith(".png")){
+                                list += "<img src='"+url+"' width='320' height ='300'></img>";
+                            }else if (url.endsWith(".mp4")){
+                                list += "<video src='"+url+"' width='420' height ='300' controls></video>";
+                            }else{
+                                list += "<p>Post sin archivo</p>";
+                            }
+                        }
+                    }
+                    
+                    $("#list2").append(list);
+                }else{
+                    $("#list2").append("No se han encontrado mensajes");
+                }
+            }
+        )
+    }
+
+
+    function cambio(){
+        $("#btnPerfil").click(function() {
+            $("#perfil").show();
+            $("#comunidad").hide();
+        });
+
+        $("#btnComunidad").click(function() {
+            $("#perfil").hide();
+            $("#comunidad").show();
+        });
+    }
+    
+
+
+</script>
+
+
+
+</head>
+<body onload="getAWSKeys()">
+
+    <nav>
+        <button id="btnPerfil">Perfil</button>
+        <button id="btnComunidad">Comunidad</button>
+    </nav>
+
+    <div>
+        <h2>Perfil del usuario: </h2>
+        <h2 id="userName"></h2>
+    </div>
+
+    <div id="perfil">    
+        <label for="post">Escribe un mensaje:</label>
+
+        <textarea id="post" name="post"
+            rows="5" cols="33">
+
+        </textarea>
+
+
+
+        <form id = "formulario" action="https://juan.benlloch.s3.us-east-1.amazonaws.com" onsubmit="publicarMensaje()" method="post" enctype="multipart/form-data">
+            <input type="hidden"  id="X-Amz-Credential" name="X-Amz-Credential" value="" />
+            <input type="hidden"  id="X-Amz-Date" name="X-Amz-Date" value="" />
+            <input type="hidden"  id="Policy" name="Policy" value="" />
+            <input type="hidden"  id="X-Amz-Signature" name="X-Amz-Signature" value="" />
+            <input type="hidden"  id="key" name="key" value="fichero.sln" /><br />
+            <input type="hidden"  name="acl" value="public-read" />
+            <!--<input type="hidden"  name="success_action_redirect" value="https://juan.benlloch.s3.us-east-1.amazonaws.com/pr3/Perfil.html" />-->
+            <input type="hidden"  name="X-Amz-Algorithm" value="AWS4-HMAC-SHA256" />
+            <input type="hidden"  id="X-Amz-Security-Token" name="X-Amz-Security-Token" value=""/>
+            Select file to upload:
+            <input type="file" name="file" id="file" accept="video/mp4,image/png"><br />
+            <input type="submit" value="Publicar" name="submit" >
+        </form>
+
+        <h3>Publicaciones:</h3>
+        <ul id="list"></ul>
+    </div>
+
+    <div id="comunidad">
+
+        <h2>Página de la comunidad </h2>
+
+        <input type="text" placeholder="Buscar..." id="search">
+        <button id="buscador" onclick = "buscarUser()">Buscar</button>
+
+        <h3>Publicaciones:</h3>
+        <ul id="list2"></ul>
+
+    </div>
+
+</body>
+</html>
