@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: filemanager
+ namespace: default
+spec:
+ replicas: 3
+ selector:
+  matchLabels:
+   app: filemanager
+ template:
+  metadata:
+   labels:
+    app: filemanager
+  spec:
+   containers:
+   - name: filemanager
+     image: docker.io/joanbg/filemanager:1.1
+     volumeMounts:
+     - mountPath: /Compartida
+       name: directorio-compartido
+   volumes:
+   - name: directorio-compartido
+     hostPath:
+      path: /home/ubuntu/compartido
+      type: Directory
+       
+   
